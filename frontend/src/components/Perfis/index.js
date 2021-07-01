@@ -1,20 +1,22 @@
 
 import React, { useEffect, useState } from 'react';
-import './Cargos.css';
+import './Perfis.css';
 import { Table, Button, Modal, Input, Row, Col } from 'antd';
 
 import api from '../../services/api';
 
-function Cargos() {
+function Perfis() {
 
 	const [isModalVisible, setIsModalVisible] = useState(false);
+
 	const [dataModal, setDataModal] = useState({
-		title: "Criar cargo",
+		title: "Criar novo perfil",
 		itemEdit: undefined
 	});
+
 	const [input, setInput] = useState("");
 
-	const [allCargos, setAllCargos] = useState([]);
+	const [allPerfis, setAllPerfis] = useState([]);
 
 	const columns = [
 		{
@@ -23,23 +25,35 @@ function Cargos() {
 			key: 'nome',
 		},
 		{
-			title: 'Ações',
-			key: 'acao',
+			title: 'Deletar',
+			dataIndex: 'remover',
+			key: 'deletar',
 			width: '25%',
 			align: 'center',
-			render: (record) => <Button type='default' onClick={() => {
+			render: (remover, item) => (
+				<>
+					<Button type="default" style={{ marginRight: 10 }} onClick={() => {
 
-				setDataModal({
-					title: "Editar cargo",
-					itemEdit: record
-				});
+						setDataModal({
+							title: "Editar perfil",
+							itemEdit: item
+						});
 
-				setInput(record.nome);
+						setInput(item.nome);
+						showModal();
 
-				showModal();
+					}}>
+						Editar
+					</Button>
 
-			}}>Editar</Button>,
-		},
+					{
+						remover && <Button type="danger" onClick={() => removerPerfil(item.id)}>
+							Remover
+						</Button>
+					}
+				</>
+			)
+		}
 	];
 
 
@@ -48,18 +62,19 @@ function Cargos() {
 	};
 
 	const handleOk = async () => {
+
 		setIsModalVisible(false);
 
 		if (dataModal.itemEdit && dataModal.itemEdit != input) {
 			dataModal.itemEdit.nome = input;
-			await editarCargo(dataModal.itemEdit);
+			await editarPerfil(dataModal.itemEdit);
 		} else {
-			await adicionarCargo(input);
+			await adicionarPerfil(input);
 		}
 
 		setInput("");
+		await buscarPerfis();
 
-		await buscarCargos();
 	};
 
 	const handleCancel = () => {
@@ -67,50 +82,64 @@ function Cargos() {
 	};
 
 	//API
-	async function buscarCargos() {
+	async function buscarPerfis() {
 		try {
-			const { data: cargos } = await api.get('/cargos?ordem=asc');
 
-			if (cargos) {
-				setAllCargos(cargos);
+			const { data: perfis } = await api.get('/perfis');
+
+			if (perfis) {
+				setAllPerfis(perfis);
+				console.log("perfis API", perfis);
 			}
+
 		} catch (error) {
 			console.log("Ops ..", error);
 		}
 	}
 
-	async function adicionarCargo(nomeCargo) {
+	async function adicionarPerfil(nomePerfil) {
 		try {
 
 			//JSON SERVER
-			let ultimaKey = allCargos.slice(-1).pop() || 1;
+			let ultimaKey = allPerfis.slice(-1).pop();
 
-			let cargo = {
+			let perfil = {
 				id: ultimaKey.id + 1,
 				key: ultimaKey.key + 1,
-				nome: nomeCargo
+				nome: nomePerfil
 			};
 
-			await api.post('/cargos', cargo);
+			await api.post('/perfis', perfil);
 
 		} catch (error) {
 			console.log("Ops ..", error);
 		}
 	}
 
-	async function editarCargo(dto) {
+	async function removerPerfil(id) {
 		try {
 
-			await api.put('/cargos/' + dto.key, dto);
+			await api.delete('/perfis/' + id);
+			await buscarPerfis();
 
 		} catch (error) {
 			console.log("Ops ..", error);
 		}
 	}
 
+	async function editarPerfil(item) {
+		try {
+
+			await api.put('/perfis/' + item.key, item);
+			await buscarPerfis();
+
+		} catch (error) {
+			console.log("Ops ..", error);
+		}
+	}
 
 	useEffect(() => {
-		buscarCargos();
+		buscarPerfis();
 	}, []);
 
 	return (
@@ -118,7 +147,7 @@ function Cargos() {
 			<Row justify="end">
 				<Col span={6}>
 					<Button type="primary" onClick={showModal}>
-						Criar cargo
+						Criar perfil
 					</Button>
 				</Col>
 			</Row>
@@ -132,16 +161,15 @@ function Cargos() {
 				cancelText="Cancelar"
 			>
 				<Input
-					placeholder="Digite o nome do cargo"
+					placeholder="Digite o nome do perfil"
 					onChange={(t) => { setInput(t.target.value) }}
 					value={input}
 				/>
 			</Modal>
 
 			<br />
-
-			{allCargos.length > 0 && <Table
-				dataSource={allCargos}
+			{allPerfis.length > 0 && <Table
+				dataSource={allPerfis}
 				bordered
 				size="middle"
 				columns={columns} />}
@@ -150,4 +178,4 @@ function Cargos() {
 	);
 }
 
-export default Cargos;
+export default Perfis;

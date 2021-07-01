@@ -5,6 +5,7 @@ import { Layout, Menu, Breadcrumb } from 'antd';
 import Title from 'antd/lib/typography/Title';
 
 import Cargos from './components/Cargos';
+import Perfis from './components/Perfis';
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -25,6 +26,8 @@ function App() {
 	function renderizarConteudo(key) {
 
 		switch (key) {
+			case "perfis":
+				return <Perfis />
 			default:
 				return <Cargos />
 
@@ -46,6 +49,10 @@ function App() {
 						>
 							<Menu.Item key='cargos' title="Cargos">
 								Cargos
+							</Menu.Item>
+
+							<Menu.Item key='perfis' title="Perfis">
+								Perfis
 							</Menu.Item>
 
 						</Menu>
