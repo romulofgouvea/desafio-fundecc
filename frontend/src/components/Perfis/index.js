@@ -40,7 +40,8 @@ function Perfis() {
 						});
 
 						setInput(item.nome);
-						showModal();
+
+						setIsModalVisible(true);
 
 					}}>
 						Editar
@@ -59,13 +60,16 @@ function Perfis() {
 
 	const showModal = () => {
 		setIsModalVisible(true);
+		setInput("");
+		dataModal.itemEdit = undefined;
+		setDataModal(dataModal);
 	};
 
 	const handleOk = async () => {
 
 		setIsModalVisible(false);
 
-		if (dataModal.itemEdit && dataModal.itemEdit != input) {
+		if (dataModal.itemEdit && dataModal.itemEdit !== input) {
 			dataModal.itemEdit.nome = input;
 			await editarPerfil(dataModal.itemEdit);
 		} else {
@@ -101,7 +105,7 @@ function Perfis() {
 		try {
 
 			//JSON SERVER
-			let ultimaKey = allPerfis.slice(-1).pop();
+			let ultimaKey = (allPerfis && allPerfis.slice(-1).pop()) || 1;
 
 			let perfil = {
 				id: ultimaKey.id + 1,
