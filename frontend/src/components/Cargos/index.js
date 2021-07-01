@@ -1,13 +1,17 @@
 
 import React, { useEffect, useState } from 'react';
 import './Cargos.css';
-import { Table, Button, Modal, Input, Row, Col } from 'antd';
+import { Table, Button, Modal, Input, Row, Col, Space } from 'antd';
 
 import api from '../../services/api';
 
 function Cargos() {
 
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [dataModal, setDataModal] = useState({
+		title: "Criar cargo",
+		itemEdit: undefined
+	});
 	const [input, setInput] = useState("");
 
 	const [allCargos, setAllCargos] = useState([]);
@@ -17,7 +21,24 @@ function Cargos() {
 			title: 'Nome',
 			dataIndex: 'nome',
 			key: 'nome',
-		}
+		},
+		{
+			title: 'Ações',
+			key: 'acao',
+			width: '25%',
+			render: (record) => <Button type='default' onClick={() => {
+
+				setDataModal({
+					title: "Editar cargo",
+					itemEdit: record
+				});
+
+				setInput(record.nome);
+
+				showModal();
+
+			}}>Editar</Button>,
+		},
 	];
 
 
@@ -28,7 +49,13 @@ function Cargos() {
 	const handleOk = async () => {
 		setIsModalVisible(false);
 
-		await adicionarCargo(input);
+		if (dataModal.itemEdit != input) {
+			dataModal.itemEdit.nome = input;
+			setDataModal(dataModal);
+			await editarCargo(dataModal.itemEdit);
+		} else {
+			await adicionarCargo(input);
+		}
 
 		setInput("");
 
@@ -56,7 +83,7 @@ function Cargos() {
 		try {
 
 			//JSON SERVER
-			let ultimaKey = allCargos.slice(-1).pop();
+			let ultimaKey = allCargos.slice(-1).pop() || 1;
 
 			let cargo = {
 				id: ultimaKey.id + 1,
@@ -71,6 +98,15 @@ function Cargos() {
 		}
 	}
 
+	async function editarCargo(dto) {
+		try {
+
+			await api.put('/cargos/' + dto.key, dto);
+
+		} catch (error) {
+			console.log("Ops ..", error);
+		}
+	}
 
 
 	useEffect(() => {
@@ -88,7 +124,7 @@ function Cargos() {
 			</Row>
 
 			<Modal
-				title="Criar cargo"
+				title={dataModal.title}
 				visible={isModalVisible}
 				onOk={handleOk}
 				okText="Salvar"
@@ -101,9 +137,13 @@ function Cargos() {
 					value={input}
 				/>
 			</Modal>
+
 			<br />
+
 			{allCargos.length > 0 && <Table
 				dataSource={allCargos}
+				bordered
+				size="middle"
 				columns={columns} />}
 
 		</div>
