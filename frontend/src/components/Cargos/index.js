@@ -36,7 +36,7 @@ function Cargos() {
 
 				setInput(record.nome);
 
-				showModal();
+				setIsModalVisible(true);
 
 			}}>Editar</Button>,
 		},
@@ -45,12 +45,13 @@ function Cargos() {
 
 	const showModal = () => {
 		setIsModalVisible(true);
+		setInput("");
 	};
 
 	const handleOk = async () => {
 		setIsModalVisible(false);
 
-		if (dataModal.itemEdit && dataModal.itemEdit != input) {
+		if (dataModal.itemEdit && dataModal.itemEdit !== input) {
 			dataModal.itemEdit.nome = input;
 			await editarCargo(dataModal.itemEdit);
 		} else {
@@ -83,7 +84,7 @@ function Cargos() {
 		try {
 
 			//JSON SERVER
-			let ultimaKey = allCargos.slice(-1).pop() || 1;
+			let ultimaKey = (allCargos && allCargos.slice(-1).pop()) || 1;
 
 			let cargo = {
 				id: ultimaKey.id + 1,
